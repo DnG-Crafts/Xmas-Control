@@ -1,0 +1,86 @@
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/lblmsg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="16sp"
+            android:layout_margin="10dp"
+            android:textAlignment="center"
+            android:visibility="gone"
+            android:text="@string/add_a_controller" />
+
+        <ImageButton
+            android:id="@+id/fppBtn"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="100dp"
+            android:layout_marginBottom="140dp"
+            android:layout_gravity="center"
+            android:background="#00000000"
+            android:visibility="gone"
+            android:scaleType="fitXY"
+            android:src="@drawable/fpp"/>
+
+        <ImageButton
+            android:id="@+id/falBtn"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginBottom="140dp"
+            android:layout_gravity="center"
+            android:background="#00000000"
+            android:visibility="gone"
+            android:scaleType="fitXY"
+            android:src="@drawable/falcon"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:focusable="true"
+            android:visibility="gone"
+            android:focusableInTouchMode="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:choiceMode="singleChoice"
+            android:layout_marginBottom="36dp"
+            android:listSelector="#2e3b46" />
+
+        <com.google.android.material.bottomappbar.BottomAppBar
+            android:id="@+id/bottombar"
+            android:layout_width="match_parent"
+            android:layout_height="33dp"
+            app:tint="#151c22"
+            app:backgroundTint="#151c22"
+            android:layout_gravity="bottom"
+            />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/factionbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/add_controller"
+            android:gravity="center"
+            app:fabCustomSize="33dp"
+            app:maxImageSize="33dp"
+            app:backgroundTint="#a82e36"
+            app:layout_anchor="@id/bottombar"
+            app:srcCompat="@drawable/baseline_add_24"
+            app:tint="#151c22" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme" parent="@style/Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="colorControlHighlight">#5C5C5C</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="colorPrimary">#31191c</item>
+        <item name="colorPrimaryDark">#1c232c</item>
+        <item name="colorAccent">#3e4755</item>
+    </style>
+
+    <style name="Progress" parent="@style/Theme.AppCompat">
+        <item name="colorAccent">#a82e36</item>
+    </style>
+
+
+    <style name="AlertDialog" parent="@style/Theme.AppCompat.Dialog.Alert">
+        <item name="colorAccent">#ffffff</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:background">#1c232c</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Alert.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Alert.Button</item>
+    </style>
+
+    <style name="Alert.Button" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="rippleColor">#a82e36</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+</resources>
