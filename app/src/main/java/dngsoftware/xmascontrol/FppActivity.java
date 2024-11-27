@@ -18,18 +18,23 @@ import static dngsoftware.xmascontrol.FppCommands.fppVolume;
 import static dngsoftware.xmascontrol.FppCommands.fppVolumeBody;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.List;
@@ -44,10 +49,10 @@ public class FppActivity extends Activity {
     private String restHost = "127.0.0.1";
     private TextView tDbg;
     private TextView tVol;
+    private ImageView errIco;
     private ScheduledExecutorService scheduler;
-    int maxVolume = 100;
-    int currentVolume = 0;
-    SeekBar vBar;
+    private int currentVolume = 0;
+    private SeekBar vBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,7 +68,8 @@ public class FppActivity extends Activity {
                 tDbg = findViewById(R.id.txtDbg);
                 tVol = findViewById(R.id.txtVol);
                 vBar = findViewById(R.id.volBar);
-                vBar.setMax(maxVolume);
+                errIco = findViewById(R.id.errIcon);
+                vBar.setMax(100);
 
                 vBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -115,6 +121,20 @@ public class FppActivity extends Activity {
             try {
                 JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus));
                 JSONArray sensorArr = status.getJSONArray("sensors");
+
+                if (status.has("warningInfo")) {
+                    runOnUiThread(() -> {
+                       errIco.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.twotone_warning_24));
+                       errIco.setVisibility(View.VISIBLE);
+                    });
+                }
+                else {
+                    runOnUiThread(() -> {
+                       errIco.setVisibility(View.GONE);
+                    });
+                }
+
+
                 JSONObject sensors = sensorArr.getJSONObject(0);
                 int statusVol = status.getInt("volume");
                 if (statusVol != currentVolume) {
@@ -309,7 +329,6 @@ public class FppActivity extends Activity {
     }
 
 
-
     public void openSequences(View v) {
 
         Intent intent = new Intent(this, SequenceActivity.class);
@@ -319,8 +338,46 @@ public class FppActivity extends Activity {
     }
 
 
+    public void openErrors(View v) {
+        openDialog();
+    }
+
+
     public void setVolume(int volume) {
         sendRest(fppVolume, String.format(fppVolumeBody , volume));
     }
 
+
+    void openDialog() {
+        final Dialog dialog = new Dialog(context,android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.error_dialog);
+        dialog.setCanceledOnTouchOutside(false);
+        final TextView dlgTitle = dialog.findViewById(R.id.dlgtitle);
+        final TextView errLog = dialog.findViewById(R.id.errorLog);
+        final ImageButton btnCls = dialog.findViewById(R.id.btncls);
+        dlgTitle.setText(R.string.error_log);
+        dialog.setTitle(R.string.error_log);
+        btnCls.setOnClickListener(v -> dialog.dismiss());
+        new Thread(() -> {
+            try {
+                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus));
+                if (status.has("warningInfo")) {
+                    StringBuilder errMsg = new StringBuilder();
+                    JSONArray errorArr = status.getJSONArray("warningInfo");
+                    for (int i = 0; i < errorArr.length(); i++) {
+                        JSONObject error = errorArr.getJSONObject(i);
+                        errMsg.append(i + 1);
+                        errMsg.append(": ");
+                        errMsg.append(error.getString("message"));
+                        errMsg.append("\n\n");
+                    }
+                    runOnUiThread(() -> {
+                        errLog.setText(errMsg.toString());
+                        dialog.show();
+                    });
+                }
+            } catch (Exception ignored) {}
+        }).start();
+    }
 }

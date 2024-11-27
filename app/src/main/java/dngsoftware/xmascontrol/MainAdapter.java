@@ -79,6 +79,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
         if (holder.itemInfo2.getText().toString().isEmpty()) {
             holder.itemInfo.setText("");
+            holder.errorIco.setVisibility(View.GONE);
             holder.itemInfo2.setText(R.string.lbloffline);
         }
 
@@ -102,6 +103,18 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                     try {
                         JSONObject status = new JSONObject(getRESTCommand(listItems[position].url, fppStatus));
                         JSONArray sensorArr = status.getJSONArray("sensors");
+                       if (status.has("warningInfo")) {
+                           handler.post(() -> {
+                               holder.errorIco.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.twotone_warning_24));
+                               holder.errorIco.setVisibility(View.VISIBLE);
+                           });
+                       }
+                       else {
+                           handler.post(() -> {
+                           holder.errorIco.setVisibility(View.GONE);
+                           });
+                       }
+
                         JSONObject sensors = sensorArr.getJSONObject(0);
                         String tmpCpu = sensors.getString("formatted");
                         if (tmpCpu.isEmpty()) {
@@ -131,23 +144,23 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                                 holder.icon.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.fpp));
                             }
                             if (tVar.contains("Pi 5")) {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi5));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi5));
                             } else if (tVar.contains("Pi 4") || tVar.contains("Pi Compute Module 4")) {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi4));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi4));
                             } else if (tVar.contains("Pi 3")) {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi3));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi3));
                             } else if (tVar.contains("Pi 2")) {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi2));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi2));
                             } else if (tVar.contains("Pi Model") || tVar.contains("Pi Zero")) {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pi));
                             } else if (tVar.contains("PocketBeagle") || tVar.contains("Green") || tVar.contains("Black") || tVar.contains("BeagleBone")) {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.bb));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.bb));
                             } else if (tVar.contains("Orange")) {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.orange));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.orange));
                             } else if (tVar.contains("Pine")) {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pine));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.pine));
                             } else {
-                                holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.blank));
+                                holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.blank));
                             }
                             holder.itemInfo.setText(MessageFormat.format("{0}{1}", context.getString(R.string.cpu_temp), tCpu));
                             holder.itemInfo2.setText(MessageFormat.format("Mode: {0}\n{1}", capFirst(fppType), cSeq.replace(".fseq", "")));
@@ -193,6 +206,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                                 if (holder.itemInfo2.getText().toString().isEmpty() || holder.itemInfo2.getText().toString().equals(getString(context, R.string.lbloffline))) {
                                     holder.itemInfo2.setText(R.string.lblonline);
                                     holder.itemInfo.setText("");
+                                    holder.errorIco.setVisibility(View.GONE);
                                 }
                             });
                         }
@@ -202,7 +216,8 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                         holder.itemInfo2.setText(R.string.lbloffline);
                         holder.itemInfo.setText("");
                         holder.imgBtn.setVisibility(View.GONE);
-                        holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.blank));
+                        holder.errorIco.setVisibility(View.GONE);
+                        holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.blank));
                         setLogo(holder, position, handler);
                     });
                 }
@@ -211,7 +226,8 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                     holder.itemInfo2.setText(R.string.lbloffline);
                     holder.itemInfo.setText("");
                     holder.imgBtn.setVisibility(View.GONE);
-                    holder.iconp.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.blank));
+                    holder.errorIco.setVisibility(View.GONE);
+                    holder.iconP.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.blank));
                     setLogo(holder, position, handler);
                 });
             }
@@ -270,11 +286,12 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         TextView itemUrl;
         TextView itemTag;
         ImageView icon;
-        ImageView iconp;
+        ImageView iconP;
         TextView itemInfo;
         TextView itemInfo2;
         ImageView imgBtn;
         ImageView moveBtn;
+        ImageView errorIco;
         boolean isFpp;
 
         ViewHolder(View itemView) {
@@ -283,11 +300,12 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
             itemUrl = itemView.findViewById(R.id.itemUrl);
             itemTag = itemView.findViewById(R.id.itemTag);
             icon = itemView.findViewById(R.id.logo);
-            iconp = itemView.findViewById(R.id.logop);
+            iconP = itemView.findViewById(R.id.logoP);
             imgBtn = itemView.findViewById(R.id.imageButton);
             itemInfo = itemView.findViewById(R.id.itemInfo);
             itemInfo2 = itemView.findViewById(R.id.itemInfo2);
-            moveBtn = itemView.findViewById(R.id.moveitem);
+            moveBtn = itemView.findViewById(R.id.moveItem);
+            errorIco = itemView.findViewById(R.id.errIco);
             isFpp = false;
 
             itemView.setOnClickListener(this);
