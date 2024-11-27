@@ -19,7 +19,8 @@ The app is available on google play<br>
 <img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/7.jpg width="30%" height="30%"><img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/8.jpg width="30%" height="30%">
 <img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/9.jpg width="30%" height="30%"><img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/10.jpg width="30%" height="30%">
 <img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/1.jpg width="30%" height="30%"><img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/2.jpg width="30%" height="30%">
-
+<img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/13.jpg width="30%" height="30%"><img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/12.jpg width="30%" height="30%">
+<img src=https://github.com/DnG-Crafts/Xmas-Control/blob/main/screens/11.jpg width="30%" height="30%">
 
 
 
