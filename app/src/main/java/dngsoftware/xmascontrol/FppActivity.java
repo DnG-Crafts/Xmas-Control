@@ -329,6 +329,7 @@ public class FppActivity extends Activity {
 
         Intent intent = new Intent(this, PlaylistActivity.class);
         intent.putExtra("HOST", restHost);
+        intent.putExtra("AUTH", FPPAuth);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         this.startActivity(intent);
     }
@@ -338,6 +339,7 @@ public class FppActivity extends Activity {
 
         Intent intent = new Intent(this, SequenceActivity.class);
         intent.putExtra("HOST", restHost);
+        intent.putExtra("AUTH", FPPAuth);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         this.startActivity(intent);
     }
