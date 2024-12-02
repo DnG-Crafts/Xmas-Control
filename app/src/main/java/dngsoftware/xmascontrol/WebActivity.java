@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.webkit.HttpAuthHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -13,6 +14,7 @@ import android.webkit.WebViewClient;
 
 public class WebActivity extends Activity {
     private WebView webView;
+    private String FPPAuth = "";
 
     @SuppressLint({"ClickableViewAccessibility", "SetJavaScriptEnabled"})
     public void onCreate(Bundle savedInstanceState) {
@@ -21,7 +23,10 @@ public class WebActivity extends Activity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             final String webUrl = extras.getString("URL");
-
+            if (extras.containsKey("AUTH"))
+            {
+                FPPAuth = extras.getString("AUTH");
+            }
             if(webUrl != null && !webUrl.isEmpty()) {
 
                 webView = findViewById(R.id.webView1);
@@ -38,8 +43,17 @@ public class WebActivity extends Activity {
                 webSettings.setDisplayZoomControls(false);
                 webView.setWebChromeClient(new WebChromeClient());
                 webView.loadUrl(webUrl);
-
                 webView.setWebViewClient(new WebViewClient() {
+
+                    @Override
+                    public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+                        if (FPPAuth.contains(":")) {
+                            String[] auth = FPPAuth.split(":");
+                            handler.proceed(auth[0], auth[1]);
+                        }
+                        super.onReceivedHttpAuthRequest(view, handler, host, realm);
+                    }
+
                     public boolean shouldOverrideUrlLoading(WebView view, String url) {
                         view.loadUrl(url);
                         return false;

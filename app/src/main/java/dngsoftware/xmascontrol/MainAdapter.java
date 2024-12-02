@@ -63,6 +63,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         holder.itemName.setText(fromHtml(listItems[position].name));
         holder.itemUrl.setText(listItems[position].url);
         holder.itemTag.setText(listItems[position].ipath);
+        holder.itemAuth.setText(listItems[position].auth);
 
         if (position != 0) {
             holder.moveBtn.setImageDrawable(AppCompatResources.getDrawable(context, android.R.drawable.stat_sys_upload_done));
@@ -101,9 +102,26 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                 if (InetAddress.getByName(tmpHost).isReachable(3000)) {
 
                     try {
-                        JSONObject status = new JSONObject(getRESTCommand(listItems[position].url, fppStatus));
+
+                        JSONObject status = new JSONObject(getRESTCommand(listItems[position].url, fppStatus, listItems[position].auth));
+                        if (status.has("HTTP_ERROR")) {
+                            final String error = status.getString("HTTP_ERROR");
+                            handler.post(() -> {
+                                holder.itemInfo.setText(R.string.error);
+                                if (error.equals("401")) {
+                                    holder.itemInfo2.setText(R.string.http_error_401);
+                                }else {
+                                    holder.itemInfo2.setText(R.string.http_error_unknown);
+                                }
+                                holder.imgBtn.setVisibility(View.GONE);
+                                holder.errorIco.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.twotone_report_24));
+                                holder.errorIco.setVisibility(View.VISIBLE);
+                            });
+                            return;
+                        }
+
                         JSONArray sensorArr = status.getJSONArray("sensors");
-                       if (status.has("warningInfo")) {
+                        if (status.has("warningInfo") || status.has("warnings")) {
                            handler.post(() -> {
                                holder.errorIco.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.twotone_warning_24));
                                holder.errorIco.setVisibility(View.VISIBLE);
@@ -131,9 +149,12 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                             currSeq = "Idle";
                         }
 
+
                         String advJs = status.getString("advancedView");
                         JSONObject adv = new JSONObject(advJs);
                         String fppType = status.getString("mode_name");
+
+
                         final String tVar = adv.getString("Variant");
                         final String tCpu = tmpCpu;
                         final String cSeq = currSeq;
@@ -166,10 +187,11 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                             holder.itemInfo2.setText(MessageFormat.format("Mode: {0}\n{1}", capFirst(fppType), cSeq.replace(".fseq", "")));
                             holder.imgBtn.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.twotone_settings_24));
                             holder.imgBtn.setVisibility(View.VISIBLE);
-                            holder.imgBtn.setOnClickListener(v -> loadBrowser(context, holder.itemUrl.getText().toString()));
+                            holder.imgBtn.setOnClickListener(v -> loadBrowser(context, holder.itemUrl.getText().toString(), listItems[position].auth));
                             holder.isFpp = true;
                         });
 
+                        
                     } catch (JSONException e) {
 
                         try {
@@ -197,7 +219,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                                 holder.itemInfo.setText(MessageFormat.format("{0}{1}", context.getString(R.string.cpu_temp), tCpu));
                                 holder.imgBtn.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.twotone_settings_24));
                                 holder.imgBtn.setVisibility(View.VISIBLE);
-                                holder.imgBtn.setOnClickListener(v -> loadBrowser(context, holder.itemUrl.getText().toString()));
+                                holder.imgBtn.setOnClickListener(v -> loadBrowser(context, holder.itemUrl.getText().toString(),""));
                                 holder.isFpp = false;
                             });
 
@@ -285,6 +307,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         TextView itemName;
         TextView itemUrl;
         TextView itemTag;
+        TextView itemAuth;
         ImageView icon;
         ImageView iconP;
         TextView itemInfo;
@@ -299,6 +322,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
             itemName = itemView.findViewById(R.id.itemName);
             itemUrl = itemView.findViewById(R.id.itemUrl);
             itemTag = itemView.findViewById(R.id.itemTag);
+            itemAuth = itemView.findViewById(R.id.itemAuth);
             icon = itemView.findViewById(R.id.logo);
             iconP = itemView.findViewById(R.id.logoP);
             imgBtn = itemView.findViewById(R.id.imageButton);
@@ -317,24 +341,31 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         public void onClick(View view) {
             Handler handler = new Handler(getMainLooper());
             TextView urlTxt = view.findViewById(R.id.itemUrl);
-            TextView infoTxt = view.findViewById(R.id.itemInfo2);
+            TextView infoTxt2 = view.findViewById(R.id.itemInfo2);
+            TextView infoTxt = view.findViewById(R.id.itemInfo);
+            TextView authTxt = view.findViewById(R.id.itemAuth);
             String url = urlTxt.getText().toString();
+            String info2 = infoTxt2.getText().toString();
             String info = infoTxt.getText().toString();
-            if (!info.equalsIgnoreCase("offline")) {
-                new Thread(() -> {
-                        if (isAvailable("http://" + url)) {
-                            if (isFpp) {
-                                loadFppActivity(context, url);
-                            } else {
-                                loadFalconActivity(context, url);
-                            }
-                        }
-                        else {
-                            handler.post(() -> Toast.makeText(context, R.string.device_unavailable, Toast.LENGTH_SHORT).show());
-                        }
-                }).start();
-            } else {
+            String auth = authTxt.getText().toString();
+            if (info2.equalsIgnoreCase("offline")) {
                 Toast.makeText(context, R.string.lblpoffline, Toast.LENGTH_SHORT).show();
+            } else if (info2.equalsIgnoreCase("online")) {
+                Toast.makeText(context, R.string.device_unavailable, Toast.LENGTH_SHORT).show();
+            } else if (info.equalsIgnoreCase("ERROR")) {
+                Toast.makeText(context, R.string.device_error, Toast.LENGTH_SHORT).show();
+            } else {
+                new Thread(() -> {
+                    if (isAvailable("http://" + url)) {
+                        if (isFpp) {
+                            loadFppActivity(context, url, auth);
+                        } else {
+                            loadFalconActivity(context, url);
+                        }
+                    } else {
+                        handler.post(() -> Toast.makeText(context, R.string.device_unavailable, Toast.LENGTH_SHORT).show());
+                    }
+                }).start();
             }
         }
 

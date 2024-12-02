@@ -1,5 +1,6 @@
 package dngsoftware.xmascontrol;
 
+import static dngsoftware.xmascontrol.Functions.MIGRATION_1_2;
 import static dngsoftware.xmascontrol.Functions.checkReadImagePermission;
 import static dngsoftware.xmascontrol.Functions.copyBitmap;
 import static dngsoftware.xmascontrol.Functions.getCameraPhotoOrientation;
@@ -26,6 +27,7 @@ import android.provider.Settings;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -41,6 +43,7 @@ import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.json.JSONObject;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -98,11 +101,11 @@ public class MainActivity extends AppCompatActivity {
         BottomAppBar bottomAppBar = findViewById(R.id.bottombar);
         setSupportActionBar(bottomAppBar);
         FloatingActionButton fab = findViewById(R.id.factionbar);
-        fab.setOnClickListener(v -> openDialog("", "", ""));
+        fab.setOnClickListener(v -> openDialog("", "", "", ""));
         falBtn = findViewById(R.id.falBtn);
         fppBtn = findViewById(R.id.fppBtn);
-        falBtn.setOnClickListener(v -> openDialog("", "", ""));
-        fppBtn.setOnClickListener(v -> openDialog("", "", ""));
+        falBtn.setOnClickListener(v -> openDialog("", "", "", ""));
+        fppBtn.setOnClickListener(v -> openDialog("", "", "", ""));
         recyclerView = findViewById(R.id.recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -111,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
         addMsg = findViewById(R.id.lblmsg);
 
-        AppDataBase adb = Room.databaseBuilder(context, AppDataBase.class, "app_database").build();
+        AppDataBase adb = Room.databaseBuilder(context, AppDataBase.class, "app_database").addMigrations(MIGRATION_1_2).fallbackToDestructiveMigration().build();
         appDb = adb.appDB();
 
     }
@@ -152,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
                         listItems[i] = new listItem();
                         listItems[i].name = items.deviceName;
                         listItems[i].url = items.deviceUrl;
+                        listItems[i].auth = Objects.requireNonNullElse(items.deviceAuth, "");
                         if (items.deviceImage != null && !items.deviceImage.isEmpty()) {
                             listItems[i].ipath = items.deviceImage;
                         }
@@ -186,6 +190,8 @@ public class MainActivity extends AppCompatActivity {
                         final String name = nameTxt.getText().toString();
                         TextView imgTxt = view.findViewById(R.id.itemTag);
                         final String imgPath = imgTxt.getText().toString();
+                        TextView authTxt = view.findViewById(R.id.itemAuth);
+                        final String auth = authTxt.getText().toString();
                         final Dialog dialog = new Dialog(context);
                         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                         dialog.setContentView(R.layout.action_dialog);
@@ -201,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                         final Button btnEdt = dialog.findViewById(R.id.btnedt);
                         btnEdt.setOnClickListener(v -> {
                             dialog.dismiss();
-                            openDialog(url, name, imgPath);
+                            openDialog(url, name, imgPath, auth);
                         });
 
                         final Button btnDel = dialog.findViewById(R.id.btndel);
@@ -264,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    void openDialog(String cHost, String cName, String cImage) {
+    void openDialog(String cHost, String cName, String cImage, String cAuth) {
         final Dialog dialog = new Dialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.edit_dialog);
@@ -276,12 +282,37 @@ public class MainActivity extends AppCompatActivity {
         final Button btnImg = dialog.findViewById(R.id.btnimg);
         final Button btnAdd = dialog.findViewById(R.id.btnadd);
         final Button btnName = dialog.findViewById(R.id.btnname);
+        final TextView authName = dialog.findViewById(R.id.authname);
+        final TextView authPass = dialog.findViewById(R.id.authpass);
+        final CheckBox authChk = dialog.findViewById(R.id.authchk);
+        final TextView lblName = dialog.findViewById(R.id.authnlbl);
+        final TextView lblPass = dialog.findViewById(R.id.authplbl);
+
         btnClear = dialog.findViewById(R.id.btnclr);
         tmpImage = dialog.findViewById(R.id.ivimg);
         tmpImagePath = "";
         isEditing = false;
         dlgTitle.setText(R.string.lbladdprint);
         dialog.setTitle(R.string.lbladdprint);
+        authChk.setChecked(false);
+        authName.setVisibility(View.GONE);
+        authPass.setVisibility(View.GONE);
+        lblName.setVisibility(View.GONE);
+        lblPass.setVisibility(View.GONE);
+
+        if (!cAuth.isEmpty()) {
+            if (cAuth.contains(":")) {
+                String[] auth = cAuth.split(":");
+                authName.setText(auth[0]);
+                authPass.setText(auth[1]);
+            }
+            authChk.setChecked(true);
+            authName.setVisibility(View.VISIBLE);
+            authPass.setVisibility(View.VISIBLE);
+            lblName.setVisibility(View.VISIBLE);
+            lblPass.setVisibility(View.VISIBLE);
+        }
+
         if (!cHost.isEmpty()) {
             isEditing = true;
             btnAdd.setText(R.string.lblsave);
@@ -298,6 +329,22 @@ public class MainActivity extends AppCompatActivity {
             btnClear.setVisibility(View.VISIBLE);
         }
 
+
+        authChk.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                authName.setVisibility(View.VISIBLE);
+                authPass.setVisibility(View.VISIBLE);
+                lblName.setVisibility(View.VISIBLE);
+                lblPass.setVisibility(View.VISIBLE);
+            } else {
+                authName.setVisibility(View.GONE);
+                authPass.setVisibility(View.GONE);
+                lblName.setVisibility(View.GONE);
+                lblPass.setVisibility(View.GONE);
+
+            }
+        });
+
         btnCls.setOnClickListener(v -> dialog.dismiss());
 
         btnClear.setOnClickListener(v -> {
@@ -311,7 +358,12 @@ public class MainActivity extends AppCompatActivity {
             try {
                 if (!pUrl.getText().toString().isEmpty()) {
                     try {
-                        JSONObject fInfo = new JSONObject(getRESTCommand(pUrl.getText().toString(), fppInfo));
+                        JSONObject fInfo;
+                        if (cAuth.isEmpty() && !authName.getText().toString().isEmpty() && !authPass.getText().toString().isEmpty()) {
+                             fInfo = new JSONObject(getRESTCommand(pUrl.getText().toString(), fppInfo, authName.getText().toString() + ":" + authPass.getText().toString()));
+                        }else {
+                             fInfo = new JSONObject(getRESTCommand(pUrl.getText().toString(), fppInfo, cAuth));
+                        }
                         String fName = fInfo.getString("HostName");
                         runOnUiThread(() -> pName.setText(fName));
                     } catch (org.json.JSONException e) {
@@ -371,6 +423,10 @@ public class MainActivity extends AppCompatActivity {
                 showToast(context, R.string.lbladdname);
                 return;
             }
+            if (authName.getText().toString().contains(":") || authPass.getText().toString().contains(":")) {
+                showToast(context, R.string.invalid_auth_char);
+                return;
+            }
             stopUpdate();
             new Thread(() -> {
                 MainItem item = new MainItem();
@@ -378,6 +434,13 @@ public class MainActivity extends AppCompatActivity {
                 item.deviceUrl = pUrl.getText().toString();
                 item.deviceName = pName.getText().toString();
                 item.deviceImage = tmpImagePath;
+                if (!authName.getText().toString().isEmpty() && !authPass.getText().toString().isEmpty())
+                {
+                    item.deviceAuth = authName.getText().toString() + ":" + authPass.getText().toString();
+                }
+                else {
+                    item.deviceAuth = "";
+                }
                 if (isEditing) {
                     MainItem tmpItem = appDb.getMainitem(cHost);
                     if (tmpItem != null) {

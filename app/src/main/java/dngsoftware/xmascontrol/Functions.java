@@ -21,9 +21,15 @@ import android.provider.OpenableColumns;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.exifinterface.media.ExifInterface;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import java.io.BufferedWriter;
@@ -120,29 +126,29 @@ public class Functions {
 
     public static String sendFalconCommand(String Host, String e,String t,String n,String s,String i, String r)
     {
-        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":" + n + ",\"E\":" + s + ",\"I\":" + i + ",\"P\":" + r + "}");
+        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":" + n + ",\"E\":" + s + ",\"I\":" + i + ",\"P\":" + r + "}", "");
     }
 
     public static String sendFalconCommand(String Host, String e,String t,String n,String s,String i)
     {
-        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":" + n + ",\"E\":" + s + ",\"I\":" + i + ",\"P\":{}}");
+        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":" + n + ",\"E\":" + s + ",\"I\":" + i + ",\"P\":{}}", "");
     }
     public static String sendFalconCommand(String Host, String e,String t,String n,String s)
     {
-        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":" + n + ",\"E\":" + s + ",\"I\":0,\"P\":{}}");
+        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":" + n + ",\"E\":" + s + ",\"I\":0,\"P\":{}}", "");
     }
 
     public static String sendFalconCommand(String Host, String e,String t,String n)
     {
-        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":" + n + ",\"E\":0,\"I\":0,\"P\":{}}");
+        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":" + n + ",\"E\":0,\"I\":0,\"P\":{}}", "");
     }
 
     public static String sendFalconCommand(String Host, String e,String t)
     {
-        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":0,\"E\":0,\"I\":0,\"P\":{}}");
+        return postRESTCommand(Host,"/api","{\"T\":\"" + e + "\",\"M\":\"" + t + "\",\"B\":0,\"E\":0,\"I\":0,\"P\":{}}", "");
     }
 
-    public static String getRESTCommand(final String Host, String Command)
+    public static String getRESTCommand(final String Host, String Command, String Auth)
     {
         URL url;
         HttpURLConnection urlConnection;
@@ -159,10 +165,17 @@ public class Functions {
             urlConnection.setRequestProperty("Accept-Language", "en-us");
             urlConnection.setRequestProperty("Accept", "*/*");
             urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:72.0) Gecko/20100101 Firefox");
+            if (Auth != null && !Auth.isEmpty()) {
+                String authStr = Base64.encodeToString(Auth.getBytes("UTF-8"), Base64.NO_WRAP);
+                urlConnection.setRequestProperty("Authorization", "Basic " + authStr);
+            }
             urlConnection.setRequestProperty("Connection", "close");
             final int responseCode = urlConnection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 server_response = readStream(urlConnection.getInputStream());
+            }
+            else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED ) {
+                    server_response = "{\"HTTP_ERROR\":\"401\"}";
             } else {
                 server_response = "[]";
             }
@@ -175,7 +188,7 @@ public class Functions {
     }
 
 
-    public static String postRESTCommand(final String Host, String Command, final String Content)
+    public static String postRESTCommand(final String Host, String Command, final String Content, String Auth)
     {
         URL url;
         HttpURLConnection urlConnection;
@@ -194,6 +207,10 @@ public class Functions {
             urlConnection.setRequestProperty("Accept", "*/*");
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setRequestProperty("Content-Length", Integer.toString(Content.getBytes().length));
+            if (Auth != null && !Auth.isEmpty()) {
+                String authStr = Base64.encodeToString(Auth.getBytes("UTF-8"), Base64.NO_WRAP);
+                urlConnection.setRequestProperty("Authorization", "Basic " + authStr);
+            }
             urlConnection.setRequestProperty("Connection", "keep-alive");
 
             if (!Content.isEmpty()) {
@@ -206,11 +223,14 @@ public class Functions {
             }
 
             urlConnection.connect();
-
             final int responseCode = urlConnection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED  || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+            if (responseCode == HttpURLConnection.HTTP_OK) {
                 server_response = readStream(urlConnection.getInputStream());
-            } else {
+            }
+            else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED ) {
+                server_response = "{\"HTTP_ERROR\":\"401\"}";
+            }
+            else {
                 server_response = "[]";
             }
         }
@@ -260,21 +280,23 @@ public class Functions {
     }
 
 
-    public static void loadBrowser(Context context, String webURL)
+    public static void loadBrowser(Context context, String webURL, String Auth)
     {
         if (!webURL.isEmpty()) {
             Intent intent = new Intent(context, WebActivity.class);
             intent.putExtra("URL", webURL);
+            intent.putExtra("AUTH", Auth);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         }
     }
 
-    public static void loadFppActivity(Context context, String rHost)
+    public static void loadFppActivity(Context context, String rHost, String rAuth)
     {
         if (!rHost.isEmpty()) {
             Intent intent = new Intent(context, FppActivity.class);
             intent.putExtra("HOST", rHost);
+            intent.putExtra("AUTH", rAuth);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         }
@@ -706,5 +728,12 @@ public class Functions {
         editor.putBoolean(sKey, bValue);
         editor.apply();
     }
+
+    public static final Migration MIGRATION_1_2 = new Migration(1,2) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE 'app_table' ADD COLUMN 'device_auth' TEXT");
+        }
+    };
 
 }

@@ -1,152 +1,222 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/mframe"
-    android:layout_width="300dp"
-    android:layout_height="350dp"
-    android:layout_gravity="center"
-    android:background="@drawable/border"
-    android:clickable="true"
-    android:focusable="true"
-    android:orientation="vertical">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/dlgtitle"
-        android:layout_width="match_parent"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mframe"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_margin="1dp"
-        android:background="#232c34"
-        android:padding="10dp"
-        android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:background="@drawable/border"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/dlgtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dp"
+            android:background="#232c34"
+            android:padding="10dp"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/pnamelbl"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="128dp"
-        android:background="#00000000"
-        android:text="@string/lblname"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/purllbl"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="5dp"
+            android:background="#00000000"
+            android:labelFor="@id/purl"
+            android:text="@string/lblurl"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/purl" />
 
-    <EditText
-        android:id="@+id/pname"
-        android:layout_width="143dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="84dp"
-        android:layout_marginTop="120dp"
-        android:background="#ffffff"
-        android:inputType="text"
-        android:textColor="#000000"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <EditText
+            android:id="@+id/purl"
+            android:layout_width="200dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="16dp"
+            android:background="#ffffff"
+            android:inputType="text"
+            android:textColor="#000000"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dlgtitle" />
 
+        <TextView
+            android:id="@+id/pnamelbl"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="5dp"
+            android:background="#00000000"
+            android:text="@string/lblname"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/pname" />
 
-    <android.widget.Button
-        android:id="@+id/btnname"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="236dp"
-        android:layout_marginTop="116dp"
-        android:backgroundTint="#3e4755"
-        android:text="@string/lessthan"
-        android:textSize="20sp"
-        android:textColor="#ffffff"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <EditText
+            android:id="@+id/pname"
+            android:layout_width="143dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="16dp"
+            android:labelFor="@id/pname"
+            android:background="#ffffff"
+            android:inputType="text"
+            android:textColor="#000000"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/purl" />
 
-    <TextView
-        android:id="@+id/purllbl"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="72dp"
-        android:background="#00000000"
-        android:text="@string/lblurl"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <android.widget.Button
+            android:id="@+id/btnname"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginStart="236dp"
+            android:layout_marginTop="-4dp"
+            android:backgroundTint="#3e4755"
+            android:text="@string/lessthan"
+            android:textSize="20sp"
+            android:textColor="#ffffff"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/pname" />
 
-    <EditText
-        android:id="@+id/purl"
-        android:layout_width="200dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="84dp"
-        android:layout_marginTop="64dp"
-        android:background="#ffffff"
-        android:inputType="text"
-        android:textColor="#000000"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/authnlbl"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="5dp"
+            android:background="#00000000"
+            android:labelFor="@id/authname"
+            android:text="@string/login"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/authname" />
 
-    <android.widget.Button
-        android:id="@+id/btncls"
-        android:layout_width="100dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="292dp"
-        android:backgroundTint="#3e4755"
-        android:text="@string/lblcancel"
-        android:textColor="#ffffff"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <EditText
+            android:id="@+id/authname"
+            android:layout_width="200dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="16dp"
+            android:background="#ffffff"
+            android:inputType="text"
+            android:textColor="#000000"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pname" />
 
+        <TextView
+            android:id="@+id/authplbl"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="5dp"
+            android:background="#00000000"
+            android:labelFor="@id/authpass"
+            android:text="@string/pass"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/authpass" />
 
-    <android.widget.Button
-        android:id="@+id/btnadd"
-        android:layout_width="100dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="184dp"
-        android:layout_marginTop="292dp"
-        android:backgroundTint="#3e4755"
-        android:text="@string/lbladd"
-        android:textColor="#ffffff"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <EditText
+            android:id="@+id/authpass"
+            android:layout_width="200dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="84dp"
+            android:layout_marginTop="16dp"
+            android:background="#ffffff"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:textColor="#000000"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/authname" />
 
-    <ImageView
-        android:id="@+id/ivimg"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="188dp"
-        android:src="@drawable/falcon"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <CheckBox
+            android:id="@+id/authchk"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="10dp"
+            android:layoutDirection="rtl"
+            android:text="@string/ui_has_auth"
+            android:textColor="#ffffff"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/authpass" />
 
-    <ImageButton
-        android:id="@+id/btnclr"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@android:drawable/presence_busy"
-        android:background="#00000000"
-        android:scaleType="fitXY"
-        android:layout_marginStart="-5dp"
-        android:layout_marginTop="-10dp"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="@+id/ivimg"
-        app:layout_constraintTop_toTopOf="@+id/ivimg"
-        />
+        <ImageView
+            android:id="@+id/ivimg"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/falcon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/authpass" />
 
+        <ImageButton
+            android:id="@+id/btnclr"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@android:drawable/presence_busy"
+            android:background="#00000000"
+            android:scaleType="fitXY"
+            android:layout_marginStart="-5dp"
+            android:layout_marginTop="-10dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@+id/ivimg"
+            app:layout_constraintTop_toTopOf="@+id/ivimg" />
 
-    <android.widget.Button
-        android:id="@+id/btnimg"
-        android:layout_width="100dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="108dp"
-        android:layout_marginTop="204dp"
-        android:backgroundTint="#3e4755"
-        android:text="@string/lblsetimg"
-        android:textColor="#ffffff"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <android.widget.Button
+            android:id="@+id/btnimg"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="108dp"
+            android:layout_marginTop="32dp"
+            android:backgroundTint="#3e4755"
+            android:text="@string/lblsetimg"
+            android:textColor="#ffffff"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/ivimg" />
 
+        <android.widget.Button
+            android:id="@+id/btncls"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#3e4755"
+            android:text="@string/lblcancel"
+            android:textColor="#ffffff"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivimg"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <android.widget.Button
+            android:id="@+id/btnadd"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#3e4755"
+            android:text="@string/lbladd"
+            android:textColor="#ffffff"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivimg"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>

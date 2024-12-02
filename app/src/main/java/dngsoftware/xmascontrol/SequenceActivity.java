@@ -4,7 +4,6 @@ import static dngsoftware.xmascontrol.Functions.convertJsonArrayToList;
 import static dngsoftware.xmascontrol.Functions.getRESTCommand;
 import static dngsoftware.xmascontrol.Functions.postRESTCommand;
 import static dngsoftware.xmascontrol.Functions.secondsToTime;
-import static dngsoftware.xmascontrol.Functions.showToast;
 import static dngsoftware.xmascontrol.Functions.stepTimeToSeconds;
 import static dngsoftware.xmascontrol.FppCommands.fppCommand;
 import static dngsoftware.xmascontrol.FppCommands.fppSequence;
@@ -12,7 +11,6 @@ import static dngsoftware.xmascontrol.FppCommands.fppSequenceMeta;
 import static dngsoftware.xmascontrol.FppCommands.fppStartSequenceAsPlaylistBody;
 import static dngsoftware.xmascontrol.FppCommands.fppStatus;
 import static dngsoftware.xmascontrol.FppCommands.fppStopPlaylist;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -42,6 +40,7 @@ public class SequenceActivity extends Activity {
     ListView listView;
     private String selectedSequence;
     List<String> items;
+    private String FPPAuth = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +53,10 @@ public class SequenceActivity extends Activity {
         listView = findViewById(R.id.listView);
 
         if (extras != null) {
+            if (extras.containsKey("AUTH"))
+            {
+                FPPAuth = extras.getString("AUTH");
+            }
             restHost = extras.getString("HOST");
             loadSequenceList();
         } else {
@@ -88,7 +91,7 @@ public class SequenceActivity extends Activity {
     void sendRest(String Cmd) {
         new Thread(() -> {
             try {
-                getRESTCommand(restHost, Cmd);
+                getRESTCommand(restHost, Cmd, FPPAuth);
 
             } catch (Exception ignored) {
             }
@@ -99,7 +102,7 @@ public class SequenceActivity extends Activity {
     void sendRest(String Cmd, String dat) {
         new Thread(() -> {
             try {
-                postRESTCommand(restHost, Cmd, dat);
+                postRESTCommand(restHost, Cmd, dat, FPPAuth);
             } catch (Exception ignored) {
             }
         }).start();
@@ -109,7 +112,7 @@ public class SequenceActivity extends Activity {
         new Thread(() -> {
             try {
 
-                JSONArray arrLists = new JSONArray(getRESTCommand(restHost, fppSequence));
+                JSONArray arrLists = new JSONArray(getRESTCommand(restHost, fppSequence, FPPAuth));
                 items = convertJsonArrayToList(arrLists);
 
                 runOnUiThread(() -> {
@@ -118,7 +121,7 @@ public class SequenceActivity extends Activity {
                     listView.setOnItemClickListener((parent, view, position, id) -> new Thread(() -> {
                         try {
                             selectedSequence = adapter.getItem(position).toString();
-                            JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, selectedSequence)));
+                            JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, selectedSequence), FPPAuth));
                             JSONObject headers = new JSONObject(sequenceMeta.getString("variableHeaders"));
 
                             runOnUiThread(() -> {
@@ -152,7 +155,7 @@ public class SequenceActivity extends Activity {
     void selectSequence(String sequence, int remaining) {
         new Thread(() -> {
             try {
-                JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, sequence)));
+                JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, sequence), FPPAuth));
                 JSONObject headers = new JSONObject(sequenceMeta.getString("variableHeaders"));
                 int duration = stepTimeToSeconds(sequenceMeta.getInt("StepTime"), sequenceMeta.getInt("NumFrames"));
                 runOnUiThread(() -> {
@@ -205,7 +208,7 @@ public class SequenceActivity extends Activity {
         scheduler = Executors.newScheduledThreadPool(1);
         Runnable task = () -> {
             try {
-                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus));
+                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus, FPPAuth));
                 String sequence = status.getString("current_sequence");
                 int remaining = status.getInt("seconds_remaining");
                 if (!sequence.isEmpty()) {

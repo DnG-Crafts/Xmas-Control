@@ -57,6 +57,7 @@ public class PlaylistActivity extends Activity {
     private int selectedPlaylist;
     private int selectedSequence = -1;
     private final ArrayList<JSONObject> items = new ArrayList<>();
+    private String FPPAuth = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,6 +73,10 @@ public class PlaylistActivity extends Activity {
         repeat.setChecked(GetSetting(context, "repeat", false));
         repeat.setOnClickListener(v -> SaveSetting(context, "repeat", repeat.isChecked()));
         if (extras != null) {
+            if (extras.containsKey("AUTH"))
+            {
+                FPPAuth = extras.getString("AUTH");
+            }
             restHost = extras.getString("HOST");
             loadPlaylists();
         } else {
@@ -105,7 +110,7 @@ public class PlaylistActivity extends Activity {
     void sendRest(String Cmd) {
         new Thread(() -> {
             try {
-                getRESTCommand(restHost, Cmd);
+                getRESTCommand(restHost, Cmd, FPPAuth);
 
             } catch (Exception ignored) {
             }
@@ -116,7 +121,7 @@ public class PlaylistActivity extends Activity {
     void sendRest(String Cmd, String dat) {
         new Thread(() -> {
             try {
-                postRESTCommand(restHost, Cmd, dat);
+                postRESTCommand(restHost, Cmd, dat, FPPAuth);
             } catch (Exception ignored) {
             }
         }).start();
@@ -128,7 +133,7 @@ public class PlaylistActivity extends Activity {
             new Thread(() -> {
                 try {
 
-                    JSONObject playList = new JSONObject(getRESTCommand(restHost, String.format(fppPlaylist, cPlaylist)));
+                    JSONObject playList = new JSONObject(getRESTCommand(restHost, String.format(fppPlaylist, cPlaylist), FPPAuth));
                     JSONArray plistArr = playList.getJSONArray("mainPlaylist");
                     items.clear();
                     for (int i = 0; i < plistArr.length(); i++) {
@@ -144,7 +149,7 @@ public class PlaylistActivity extends Activity {
                             try {
                                 selectedSequence = position + 1;
                                 JSONObject item = new JSONObject(adapter.getItem(position).toString());
-                                JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, item.getString("sequenceName"))));
+                                JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, item.getString("sequenceName")), FPPAuth));
                                 JSONObject headers = new JSONObject(sequenceMeta.getString("variableHeaders"));
 
                                 runOnUiThread(() -> {
@@ -177,7 +182,7 @@ public class PlaylistActivity extends Activity {
         new Thread(() -> {
             try {
                 JSONObject item = new JSONObject(sequence);
-                JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, item.getString("sequenceName"))));
+                JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, item.getString("sequenceName")), FPPAuth));
                 JSONObject headers = new JSONObject(sequenceMeta.getString("variableHeaders"));
                 runOnUiThread(() -> {
                     try {
@@ -205,7 +210,7 @@ public class PlaylistActivity extends Activity {
     void loadPlaylists() {
         new Thread(() -> {
             try {
-                JSONArray arrLists = new JSONArray(getRESTCommand(restHost, fppPlaylists));
+                JSONArray arrLists = new JSONArray(getRESTCommand(restHost, fppPlaylists, FPPAuth));
                 if (arrLists.length() != 0) {
                     List<String> pLists = convertJsonArrayToList(arrLists);
                     runOnUiThread(() -> {
@@ -266,7 +271,7 @@ public class PlaylistActivity extends Activity {
         scheduler = Executors.newScheduledThreadPool(1);
         Runnable task = () -> {
             try {
-                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus));
+                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus, FPPAuth));
                 String sequence = status.getString("current_sequence");
                 if (!sequence.isEmpty()) {
                     int remaining = status.getInt("seconds_remaining");

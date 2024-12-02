@@ -18,6 +18,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/errIcon"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        android:onClick="openErrors"
+        app:layout_constraintEnd_toEndOf="@+id/txtDbg"
+        app:layout_constraintTop_toTopOf="@+id/txtDbg" />
+
     <GridLayout
         android:id="@+id/grid1"
         android:layout_width="match_parent"
@@ -31,7 +42,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtDbg">
-
 
         <Button
             android:id="@+id/button"

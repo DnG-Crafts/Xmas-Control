@@ -56,4 +56,14 @@
     <string name="build">"\nBuild: "</string>
     <string name="device_unavailable">Device Unavailable</string>
     <string name="add_a_controller">Add FPP or a Falcon Controller</string>
+    <string name="close">Close</string>
+    <string name="error_log">Error Log</string>
+    <string name="pass">Pass:</string>
+    <string name="login">Login:</string>
+    <string name="ui_has_auth">UI Has Authentication</string>
+    <string name="invalid_auth_char">You cannot use the : character in the username or password</string>
+    <string name="http_error_401">Authorization required\nPlease check your login details</string>
+    <string name="http_error_unknown">Unknown</string>
+    <string name="error">ERROR</string>
+    <string name="device_error">Device Error</string>
 </resources>

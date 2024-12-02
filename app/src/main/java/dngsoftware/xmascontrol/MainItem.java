@@ -27,6 +27,10 @@ public class MainItem {
     public String deviceUrl;
 
     @SuppressWarnings("UnusedDeclaration")
+    @ColumnInfo(name = "device_auth")
+    public String deviceAuth;
+
+    @SuppressWarnings("UnusedDeclaration")
     @ColumnInfo(name = "device_image")
     public String deviceImage;
 

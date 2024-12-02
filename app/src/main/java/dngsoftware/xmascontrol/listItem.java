@@ -7,4 +7,5 @@ public class listItem {
        public String url;
        public String name;
        public String ipath;
+       public String auth;
 }

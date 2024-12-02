@@ -43,7 +43,5 @@
             android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|smallestScreenSize"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
         </activity>
-
-
     </application>
 </manifest>

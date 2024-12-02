@@ -53,6 +53,7 @@ public class FppActivity extends Activity {
     private ScheduledExecutorService scheduler;
     private int currentVolume = 0;
     private SeekBar vBar;
+    private String FPPAuth = "";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,6 +65,10 @@ public class FppActivity extends Activity {
         if (extras != null) {
             final String rHost = extras.getString("HOST");
             if (rHost != null && !rHost.isEmpty()) {
+                if (extras.containsKey("AUTH"))
+                {
+                    FPPAuth = extras.getString("AUTH");
+                }
                 restHost = rHost;
                 tDbg = findViewById(R.id.txtDbg);
                 tVol = findViewById(R.id.txtVol);
@@ -119,10 +124,10 @@ public class FppActivity extends Activity {
         scheduler = Executors.newScheduledThreadPool(1);
         Runnable task = () -> {
             try {
-                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus));
+                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus, FPPAuth));
                 JSONArray sensorArr = status.getJSONArray("sensors");
 
-                if (status.has("warningInfo")) {
+                if (status.has("warningInfo") || status.has("warnings")) {
                     runOnUiThread(() -> {
                        errIco.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.twotone_warning_24));
                        errIco.setVisibility(View.VISIBLE);
@@ -184,7 +189,7 @@ public class FppActivity extends Activity {
     void sendRest(String Cmd) {
         new Thread(() -> {
             try {
-                getRESTCommand(restHost, Cmd);
+                getRESTCommand(restHost, Cmd, FPPAuth);
 
             } catch (Exception ignored) {
             }
@@ -196,7 +201,7 @@ public class FppActivity extends Activity {
     void sendRest(String Cmd, String dat) {
         new Thread(() -> {
             try {
-                postRESTCommand(restHost, Cmd, dat);
+                postRESTCommand(restHost, Cmd, dat, FPPAuth);
             } catch (Exception ignored) {
             }
         }).start();
@@ -275,7 +280,7 @@ public class FppActivity extends Activity {
     public void startEffect(View v) {
         new Thread(() -> {
             try {
-                JSONArray arrLists = new JSONArray(getRESTCommand(restHost, fppEffects));
+                JSONArray arrLists = new JSONArray(getRESTCommand(restHost, fppEffects, FPPAuth));
                 if (arrLists.length() != 0) {
                     List<String> eLists = convertJsonArrayToList(arrLists);
                     runOnUiThread(() -> {
@@ -361,23 +366,41 @@ public class FppActivity extends Activity {
         btnCls.setOnClickListener(v -> dialog.dismiss());
         new Thread(() -> {
             try {
-                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus));
-                if (status.has("warningInfo")) {
+                JSONObject status = new JSONObject(getRESTCommand(restHost, fppStatus, FPPAuth));
+                if (status.has("warningInfo") || status.has("warnings")) {
                     StringBuilder errMsg = new StringBuilder();
-                    JSONArray errorArr = status.getJSONArray("warningInfo");
-                    for (int i = 0; i < errorArr.length(); i++) {
-                        JSONObject error = errorArr.getJSONObject(i);
-                        errMsg.append(i + 1);
-                        errMsg.append(": ");
-                        errMsg.append(error.getString("message"));
-                        errMsg.append("\n\n");
+                    if (status.has("warningInfo"))
+                    {
+                        JSONArray errorArr = status.getJSONArray("warningInfo");
+                        for (int i = 0; i < errorArr.length(); i++) {
+                            JSONObject error = errorArr.getJSONObject(i);
+                            errMsg.append(i + 1);
+                            errMsg.append(": ");
+                            errMsg.append(error.getString("message"));
+                            errMsg.append("\n\n");
+                        }
+                    }else {
+                        String errorStr = status.getString("warnings");
+                        errorStr = errorStr.replaceAll("[\"\\[\\]]","");
+                        int i = 1;
+                        String[] errorList = errorStr.split(",");
+                        for (String error : errorList) {
+                            errMsg.append(i);
+                            errMsg.append(": ");
+                            errMsg.append(error);
+                            errMsg.append("\n\n");
+                            i++;
+                        }
                     }
+
                     runOnUiThread(() -> {
                         errLog.setText(errMsg.toString());
                         dialog.show();
                     });
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                Log.e("FppActivity", Log.getStackTraceString(e));
+            }
         }).start();
     }
 }

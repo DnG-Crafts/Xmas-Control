@@ -35,7 +35,7 @@
             tools:ignore="ContentDescription" />
 
         <ImageView
-            android:id="@+id/logop"
+            android:id="@+id/logoP"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_alignParentStart="true"
@@ -46,6 +46,20 @@
             android:layout_marginTop="-3dp"
             android:adjustViewBounds="true"
             tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/errIco"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:scaleType="fitCenter"
+            android:layout_alignTop="@+id/logo"
+            android:layout_toStartOf="@+id/itemName"
+            android:layout_marginEnd="15dp"
+            android:layout_marginTop="-1dp"
+            android:adjustViewBounds="true"
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
+
 
         <TextView
             android:id="@+id/itemName"
@@ -108,6 +122,13 @@
             android:visibility="invisible"
             android:textSize="0sp"/>
 
+        <TextView
+            android:id="@+id/itemAuth"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text=""
+            android:visibility="invisible"
+            android:textSize="0sp"/>
 
         <ImageView
             android:id="@+id/imageButton"
@@ -119,12 +140,12 @@
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
             android:scaleType="fitCenter"
-            card_view:srcCompat="@android:drawable/ic_dialog_dialer"
+            card_view:srcCompat="@drawable/outline_settings_24"
             tools:ignore="ContentDescription" />
 
 
         <ImageView
-            android:id="@+id/moveitem"
+            android:id="@+id/moveItem"
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_alignParentEnd="true"
