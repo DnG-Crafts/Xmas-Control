@@ -73,7 +73,7 @@ public class Functions {
     }
 
     @SuppressLint("DefaultLocale")
-    public static String secToTime(int sec) {
+    public static String secondsToLongTime(int sec) {
         int seconds = sec % 60;
         int minutes = sec / 60;
         if (minutes >= 60) {

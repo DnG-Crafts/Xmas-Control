@@ -8,6 +8,7 @@ import static dngsoftware.xmascontrol.Functions.SaveSetting;
 import static dngsoftware.xmascontrol.Functions.convertJsonArrayToList;
 import static dngsoftware.xmascontrol.Functions.getRESTCommand;
 import static dngsoftware.xmascontrol.Functions.postRESTCommand;
+import static dngsoftware.xmascontrol.Functions.secondsToLongTime;
 import static dngsoftware.xmascontrol.Functions.secondsToTime;
 import static dngsoftware.xmascontrol.Functions.showToast;
 import static dngsoftware.xmascontrol.Functions.stepTimeToFPS;
@@ -18,9 +19,10 @@ import static dngsoftware.xmascontrol.FppCommands.fppPrevPlaylistItem;
 import static dngsoftware.xmascontrol.FppCommands.fppSequenceMeta;
 import static dngsoftware.xmascontrol.FppCommands.fppStatus;
 import static dngsoftware.xmascontrol.FppCommands.fppStopPlaylist;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,12 +30,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,10 +52,10 @@ import java.util.concurrent.TimeUnit;
 public class PlaylistActivity extends Activity {
     private String restHost = "127.0.0.1";
     private ScheduledExecutorService scheduler;
-    ListAdapter adapter;
+    RecycleAdapter recycleAdapter;
     TextView textTitle;
     TextView textInfo;
-    ListView listView;
+    RecyclerView recyclerView;
     Spinner spinner;
     CheckBox repeat;
     Context context = this;
@@ -64,10 +69,9 @@ public class PlaylistActivity extends Activity {
         super.onCreate(savedInstanceState);
         Bundle extras = getIntent().getExtras();
         setContentView(R.layout.activity_playlist);
-
         textTitle = findViewById(R.id.textTitle);
         textInfo = findViewById(R.id.textInfo);
-        listView = findViewById(R.id.listView);
+        recyclerView = findViewById(R.id.recyclerview);
         spinner = findViewById(R.id.spinner);
         repeat = findViewById(R.id.checkBox);
         repeat.setChecked(GetSetting(context, "repeat", false));
@@ -129,26 +133,62 @@ public class PlaylistActivity extends Activity {
 
     void loadSequenceList(String cPlaylist) {
         if (cPlaylist != null && !cPlaylist.isEmpty()) {
-
             new Thread(() -> {
                 try {
-
                     JSONObject playList = new JSONObject(getRESTCommand(restHost, String.format(fppPlaylist, cPlaylist), FPPAuth));
-                    JSONArray plistArr = playList.getJSONArray("mainPlaylist");
-                    items.clear();
-                    for (int i = 0; i < plistArr.length(); i++) {
-                        items.add(plistArr.getJSONObject(i));
-                    }
-
                     runOnUiThread(() -> {
-                        listView.invalidate();
-                        listView.setAdapter(null);
-                        adapter = new ListAdapter(this, items);
-                        listView.setAdapter(adapter);
-                        listView.setOnItemClickListener((parent, view, position, id) -> new Thread(() -> {
+                        try {
+                            JSONObject plistLInfo = new JSONObject(String.valueOf(playList.getJSONObject("playlistInfo")));
+                            textTitle.setText(playList.getString("name"));
+                            String info = "Total Items: " + plistLInfo.getString ("total_items") +
+                                    "\nTotal Duration: " + secondsToLongTime(Math.round(Float.parseFloat(plistLInfo.getString("total_duration")))) +
+                                    "\nRepeat: " + playList.getString("repeat") +
+                                    "\nLoop Count: " + playList.getString("loopCount") +
+                                    "\nRandomize: " + switch (playList.getString("random")) {case "1" -> "Once per load";case "2" -> "Every iteration";default -> "Off";};
+                            textInfo.setText(info);
+                        } catch (Exception e) {
+                            Log.e("PlaylistActivity", Log.getStackTraceString(e));
+                        }
+                    });
+
+                    JSONArray plistLin = playList.getJSONArray("leadIn");
+                    JSONArray plistMain= playList.getJSONArray("mainPlaylist");
+                    JSONArray plistLout = playList.getJSONArray("leadOut");
+                    items.clear();
+                    if (plistLin.length() > 0) {
+                        for (int i = 0; i < plistLin.length(); i++) {
+                            plistLin.getJSONObject(i).put("part","in");
+                            items.add(plistLin.getJSONObject(i));
+                        }
+                    }
+                    if (plistMain.length() > 0) {
+                        for (int i = 0; i < plistMain.length(); i++) {
+                            plistMain.getJSONObject(i).put("part","main");
+                            items.add(plistMain.getJSONObject(i));
+                        }
+                    }
+                    if (plistLout.length() > 0) {
+                        for (int i = 0; i < plistLout.length(); i++) {
+                            plistLout.getJSONObject(i).put("part","out");
+                            items.add(plistLout.getJSONObject(i));
+                        }
+                    }
+                    runOnUiThread(() -> {
+                        recyclerView.invalidate();
+                        recyclerView.setAdapter(null);
+                        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+                        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+                        layoutManager.scrollToPosition(0);
+                        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), layoutManager.getOrientation());
+                        recyclerView.addItemDecoration(dividerItemDecoration);
+                        recyclerView.setLayoutManager(layoutManager);
+                        recycleAdapter = new RecycleAdapter(this, items);
+                        recycleAdapter.setHasStableIds(true);
+                        recyclerView.setAdapter(recycleAdapter);
+                        recycleAdapter.setClickListener((view, position) -> new Thread(() -> {
                             try {
                                 selectedSequence = position + 1;
-                                JSONObject item = new JSONObject(adapter.getItem(position).toString());
+                                JSONObject item = new JSONObject(recycleAdapter.getItem(position).toString());
                                 JSONObject sequenceMeta = new JSONObject(getRESTCommand(restHost, String.format(fppSequenceMeta, item.getString("sequenceName")), FPPAuth));
                                 JSONObject headers = new JSONObject(sequenceMeta.getString("variableHeaders"));
 
@@ -248,6 +288,7 @@ public class PlaylistActivity extends Activity {
         sendRest(fppStopPlaylist);
         textInfo.setText("");
         textTitle.setText("");
+        recycleAdapter.SelectItem(-1);
     }
 
     public void nextPlaylistItem(View v) {
@@ -279,7 +320,7 @@ public class PlaylistActivity extends Activity {
                         if (sequence.equals(items.get(i).getString("sequenceName"))) {
                             int finalI = i;
                             runOnUiThread(() -> {
-                                listView.setItemChecked(finalI, true);
+                                recycleAdapter.SelectItem(finalI);
                                 selectSequence(items.get(finalI).toString(), remaining);
                             });
                             break;
@@ -294,23 +335,33 @@ public class PlaylistActivity extends Activity {
     }
 
 
-    public static class ListAdapter extends BaseAdapter {
+
+
+    public static class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.ViewHolder> {
         private final Context context;
         private final ArrayList<JSONObject> items;
-
-        public ListAdapter(Context context, ArrayList<JSONObject> items) {
+        private ItemClickListener mClickListener;
+        int selectedPosition=-1;
+        public RecycleAdapter(Context context, ArrayList<JSONObject> items) {
             this.context = context;
             this.items = items;
         }
 
+        @NonNull
         @Override
-        public int getCount() {
-            return items.size();
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_playlist, parent, false);
+            return new ViewHolder(view);
         }
 
         @Override
-        public Object getItem(int position) {
-            return items.get(position);
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            holder.setItem(holder.itemView, items.get(position));
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return position;
         }
 
         @Override
@@ -319,18 +370,63 @@ public class PlaylistActivity extends Activity {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = convertView;
-            if (view == null) {
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                view = inflater.inflate(R.layout.item_list, parent, false);
-            }
-            JSONObject item = items.get(position);
-            TextView sequenceName = view.findViewById(R.id.listitemname);
-            try {
-                sequenceName.setText(item.getString("sequenceName"));
-            } catch (JSONException ignored) {}
-            return view;
+        public int getItemCount() {
+            return items.size();
         }
+
+
+        public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+            public ViewHolder(View itemView) {
+                super(itemView);
+                itemView.setOnClickListener(this);
+            }
+
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public void onClick(View v) {
+                if (mClickListener != null) {
+                    mClickListener.onItemClick(v, getAbsoluteAdapterPosition());
+                    selectedPosition = getAbsoluteAdapterPosition();
+                    notifyDataSetChanged();
+                }
+            }
+
+            public void setItem(View view, JSONObject item) {
+                TextView sequenceName = view.findViewById(R.id.playlistitemname);
+                LinearLayout frame = itemView.findViewById(R.id.playlistitemframe);
+                try {
+                    sequenceName.setText(item.getString("sequenceName"));
+                    if (item.getString("part").equals("in")) {
+                        sequenceName.setTextColor(Color.parseColor("#90EE90"));
+                    } else if (item.getString("part").equals("out")) {
+                        sequenceName.setTextColor(Color.parseColor("#FA8072"));
+                    }
+                } catch (Exception ignored) {}
+                if (selectedPosition == getAbsoluteAdapterPosition()) {
+                    frame.setBackgroundColor(context.getResources().getColor(R.color.material_dynamic_neutral_variant50));
+                } else {
+                    frame.setBackgroundColor(context.getResources().getColor(R.color.material_dynamic_neutral_variant20));
+                }
+            }
+        }
+
+        public void setClickListener(ItemClickListener itemClickListener) {
+            this.mClickListener = itemClickListener;
+        }
+
+        public interface ItemClickListener {
+            void onItemClick(View view, int position);
+        }
+
+        public Object getItem(int position){
+            return items.get(position);
+        }
+
+        @SuppressLint("NotifyDataSetChanged")
+        public void SelectItem(int position){
+            selectedPosition = position;
+            notifyDataSetChanged();
+        }
+
     }
 }

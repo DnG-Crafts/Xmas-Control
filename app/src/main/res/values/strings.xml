@@ -66,4 +66,7 @@
     <string name="http_error_unknown">Unknown</string>
     <string name="error">ERROR</string>
     <string name="device_error">Device Error</string>
+    <string name="_9724_lead_in">◼ Lead In</string>
+    <string name="_9724_lead_out">◼ Lead Out</string>
+    <string name="repeat_playlist">Repeat Playlist</string>
 </resources>
